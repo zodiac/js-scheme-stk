@@ -1,3 +1,5 @@
+This is a fork of js-scheme-stk to include envdraw-like features.
+
 js-scheme-stk
 =============
 
