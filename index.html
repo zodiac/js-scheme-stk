@@ -4,7 +4,7 @@
     <title>js-scheme - a Scheme interpreter written in JavaScript</title>
     <link rel="stylesheet" type="text/css" href="js-scheme.css?r=2" />
     <script type="text/javascript" src="libs/jquery-1.8.2.js"></script>
-    <script type="text/javascript" src="libs/prototype.js"></script>
+    <script type="text/javascript" src="libs/prototype.js"></script> <!--$ is now bound to prototype, not jQuery!-->
     <script type="text/javascript" src="js-scheme.js?r=51"></script>
     <script type="text/javascript" src="libs/last.fm/last.fm.js?r=1"></script>
     <script type="text/javascript" src="libs/flot/jquery.flot.pack.js"></script>
@@ -40,9 +40,10 @@
       </noscript>
     </div>
     <form onsubmit="jscm_repl(); return false;">
-      <span id="prefix">&gt;&nbsp;</span><input type="text" name="input" 
-                                                id="input" />
+      <span id="prefix">&gt;&nbsp;</span>
+      <input type="text" name="input" id="input" />
     </form>
+    <div style="height:20em" onclick="$('input').focus()"></div>
     <!--[if IE]>
         <style type="text/css">#console,form {display:none;}</style>
         js-scheme doesn't work with Internet Explorer.
