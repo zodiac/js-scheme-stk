@@ -643,6 +643,7 @@ var Promise = Class.create({
 
 var Pair = Class.create({
     initialize: function(car, cdr, parens) {
+        this.iden = Math.random().toString(36).substring(7);
         this.car = car;
         this.cdr = cdr;
         this.parens = parens === undefined ? true : parens;
@@ -688,6 +689,38 @@ var Pair = Class.create({
             Util.format(this.cdr) + (this.parens ? ')' : '');
     }
 });
+function print_pairs(pairs) {
+    function print_pairs_helper(pairs, seen) {
+        for (var p = 0; p < pairs.length; p++) {
+            var pair = pairs[p];
+            if (seen.indexOf(pair.iden) >= 0) {
+                continue;
+            } else {
+                var n_car, n_cdr;
+                seen.push(pair.iden);
+                if (pair.car.iden) {
+                    n_car = pair.car.iden;
+                    print_pairs_helper([pair.car], seen)
+                } else {
+                    n_car = pair.car;
+                }
+                if (pair.cdr.iden) {
+                    n_cdr = pair.cdr.iden;
+                    print_pairs_helper([pair.cdr], seen)
+                } else {
+                    n_cdr = pair.cdr;
+                }
+                console.log(pair.iden + ":" + n_car + "," + n_cdr);
+            }
+        }
+    }
+    p_objs = [];
+    for (var p = 0; p < pairs.length; p++) {
+        p_objs.push(GlobalEnvironment.table.get(pairs[p].obj));
+        console.log(pairs[p] + " is " + pairs[p].iden); //send names instead
+    }
+    print_pairs_helper(pairs, []);
+}
 
 var Environment = Class.create({
     initialize: function(parent) {
