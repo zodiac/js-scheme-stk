@@ -643,7 +643,7 @@ var Promise = Class.create({
 
 var Pair = Class.create({
     initialize: function(car, cdr, parens) {
-        this.iden = Math.random().toString(36).substring(7);
+        this.iden = "#" + Math.random().toString(36).substring(7);
         this.car = car;
         this.cdr = cdr;
         this.parens = parens === undefined ? true : parens;
@@ -663,69 +663,98 @@ var Pair = Class.create({
             return false;
         }
     },
-    toStringList: function() {
-        var a = this;
-        var ans = "(";
-        var firstElement = true;
-        while(a.cdr)
-        {
-            if(!firstElement)
-                ans += ' ';
-            else
-                firstElement = false;
-
-            ans += Util.format(a.car);
-            a = a.cdr;
-        }
-        //        return Util.format(this.car) + (Util.isNull(this.cdr) ? '' : ' ' +
-        //                                      Util.format(this.cdr[0]));
-        return ans+")";
-    },
     toString: function() {
-        var out = "";
-        var pairs = print_pair(this);
-        for (var i = 0; i < pairs.length; i++) {
-            p = pairs[i];
-            out += p.iden + " = (" + p.car + " . " + p.cdr + ")\n";
-        }
-        return out;
-        if (this.isNullTerminated()) {
-            return this.toStringList();
-        }
-        return (this.parens ? '(' : '') + Util.format(this.car) + ' . ' +
-            Util.format(this.cdr) + (this.parens ? ')' : '');
+        return pair_toString(list_subpairs(this));
+        //what does this.parens do?
     }
 });
 
-function print_pair(pair) {
-    function print_pair_helper(pair, seen) {
-        if (seen.indexOf(pair.iden) >= 0) {
+
+
+function pair_toString(pair) {
+
+    function all_idens(pair) {
+        if (pair[0] && pair[0] === "#") {
+            return [pair];
+        }         
+        if (pair.iden === undefined) {
             return [];
-        }
-
-        var ret = [];
-        var n_car, n_cdr;
-
-        seen.push(pair.iden);
-
-        if (pair.car.iden) {
-            n_car = pair.car.iden;
-            ret = ret.concat(print_pair_helper(pair.car, seen));
         } else {
-            n_car = pair.car;
+            var ret = [];
+            ret = ret.concat(all_idens(pair.car));
+            ret = ret.concat(all_idens(pair.cdr));
+            ret.push(pair.iden);
+            return ret;
         }
-
-        if (pair.cdr.iden) {
-            n_cdr = pair.cdr.iden;
-            ret = ret.concat(print_pair_helper(pair.cdr, seen))
-        } else {
-            n_cdr = pair.cdr;
-        }
-
-        ret.push({'iden': pair.iden, 'car': n_car, 'cdr': n_cdr});
-        return ret;
     }
-    return print_pair_helper(pair, []);
+
+
+    function useless_idens(pair) {
+        var idens = all_idens(pair);
+        var counts = {};
+        for (var i = 0; i < idens.length; i++) {
+            var iden = idens[i];
+            counts[iden] = counts[iden] ? counts[iden] + 1 : 1
+        }
+        var useless = [];
+        for (var key in counts) {
+            if (counts.hasOwnProperty(key) && counts[key] === 1) {
+                useless.push(key);
+            }
+        }
+        return useless;
+    }
+
+
+    function remove_useless_idens(pair) {
+        var up = useless_idens(pair);
+        function useless(iden) {
+            return up.indexOf(iden) >= 0
+        }
+        function rem(pair) {
+            if (pair.iden === undefined) {
+                return pair;
+            } else {
+                var ret = {'car': rem(pair.car), 'cdr': rem(pair.cdr)};
+                if (!useless(pair.iden)) {
+                    ret['iden'] = pair.iden;
+                }
+            }
+            return ret;
+        }
+        return rem(pair);
+    }
+
+    pair = remove_useless_idens(pair);
+
+    function putstr(pair) {
+        if (pair.car) {
+            return (pair.iden ? (pair.iden + " = (") :  " (") + putstr(pair.car) + " . " + putstr(pair.cdr) + ")";
+        } else {
+            return String(pair);
+        }
+    }
+    return putstr(pair);
+}
+
+function list_subpairs(pair) {
+    function list_subpairs_helper(pair, seen) {
+        if (pair.iden === undefined) {
+            return pair;
+        }
+        if (seen.indexOf(pair.iden) >= 0) {
+            return pair.iden;
+        } else {
+            var car, cdr;
+            seen.push(pair.iden);
+
+            car = list_subpairs_helper(pair.car, seen);
+            cdr = list_subpairs_helper(pair.cdr, seen);
+
+            return {'car': car, 'cdr': cdr, 'iden': pair.iden};
+        }
+    }
+    return list_subpairs_helper(pair, []);
 }
 
 function print_names(names) { //for envdraw
@@ -735,7 +764,7 @@ function print_names(names) { //for envdraw
         p_objs.push(obj);
         //ret.push({'name': names[p], 'iden': obj.iden});
     }
-    return print_pair_helper(p_objs, []);
+    return list_subpairs(p_objs);
 }
 
 var Environment = Class.create({
