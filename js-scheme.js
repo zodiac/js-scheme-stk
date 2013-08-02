@@ -727,14 +727,39 @@ function pair_toString(pair) {
 
     pair = remove_useless_idens(pair);
 
-    function putstr(pair) {
-        if (pair.car) {
-            return (pair.iden ? (pair.iden + " = (") :  " (") + putstr(pair.car) + " . " + putstr(pair.cdr) + ")";
+    function isEmptyArray(obj) {
+        return (Object.prototype.toString.call(obj) === '[object Array]') && obj.length === 0;
+    }
+
+    function print_pair(pair) {
+        if (pair.iden) {
+            return pair.iden + "=(" + print_list(pair).slice(0,-1) + " )";
         } else {
-            return String(pair);
+            return "(" + print_list(pair).slice(0,-1) + ")";
         }
     }
-    return putstr(pair);
+
+    function print_list(pair) {
+        var ret = "";
+        if (pair.car.car) {
+            ret += print_pair(pair.car);
+        } else {
+            ret += String(pair.car);
+        }
+
+        ret += " ";
+
+        if (pair.cdr.car) {
+            ret += print_list(pair.cdr);
+        } else if (isEmptyArray(pair.cdr)) {
+            ret += "";
+        } else {
+            ret = ret + " . " + String(pair.cdr) + " ";
+        }
+        return ret;
+    }
+    console.log(pair);
+    return print_pair(pair);
 }
 
 function list_subpairs(pair) {
