@@ -733,7 +733,7 @@ function pair_toString(pair) {
 
     function print_pair(pair) {
         if (pair.iden) {
-            return pair.iden + "=(" + print_list(pair).slice(0,-1) + " )";
+            return pair.iden + "=(" + print_list(pair).slice(0,-1) + ")";
         } else {
             return "(" + print_list(pair).slice(0,-1) + ")";
         }
