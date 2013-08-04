@@ -680,36 +680,26 @@ function pair_toString(pair) {
         if (pair.iden === undefined) {
             return [];
         } else {
-            var ret = [];
-            ret = ret.concat(all_idens(pair.car));
-            ret = ret.concat(all_idens(pair.cdr));
-            ret.push(pair.iden);
-            return ret;
+            return [pair.iden].concat(all_idens(pair.car), all_idens(pair.cdr));
         }
     }
 
 
-    function useless_idens(pair) {
+    function count_idens(pair) {
         var idens = all_idens(pair);
         var counts = {};
         for (var i = 0; i < idens.length; i++) {
             var iden = idens[i];
             counts[iden] = counts[iden] ? counts[iden] + 1 : 1
         }
-        var useless = [];
-        for (var key in counts) {
-            if (counts.hasOwnProperty(key) && counts[key] === 1) {
-                useless.push(key);
-            }
-        }
-        return useless;
+        return counts;
     }
 
 
     function remove_useless_idens(pair) {
-        var up = useless_idens(pair);
+        var counts = count_idens(pair);
         function useless(iden) {
-            return up.indexOf(iden) >= 0
+            return counts[iden] === 1;
         }
         function rem(pair) {
             if (pair.iden === undefined) {
@@ -758,7 +748,6 @@ function pair_toString(pair) {
         }
         return ret;
     }
-    console.log(pair);
     return print_pair(pair);
 }
 
