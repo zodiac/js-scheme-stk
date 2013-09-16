@@ -664,8 +664,8 @@ var Pair = Class.create({
         }
     },
     toString: function() {
+        draw_pair(this);
         return pair_toString(list_subpairs(this));
-        //what does this.parens do?
     }
 });
 
@@ -771,14 +771,15 @@ function list_subpairs(pair) {
     return list_subpairs_helper(pair, []);
 }
 
-function print_names(names) { //for envdraw
-    p_objs = [];
-    for (var p = 0; p < names.length; p++) {names
-        var obj = GlobalEnvironment.table.get(names[p]).obj
-        p_objs.push(obj);
-        //ret.push({'name': names[p], 'iden': obj.iden});
+function draw_pair(pair) {
+    var obj = GlobalEnvironment.table.get(pair).obj;
+    var subpairs = list_subpairs(obj);
+
+    function draw(p) {
+        var out = "";
+        out += p.iden;
+        
     }
-    return list_subpairs(p_objs);
 }
 
 var Environment = Class.create({

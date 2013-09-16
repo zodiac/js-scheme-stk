@@ -9,6 +9,7 @@
     <script type="text/javascript" src="libs/last.fm/last.fm.js?r=1"></script>
     <script type="text/javascript" src="libs/flot/jquery.flot.pack.js"></script>
     <script type="text/javascript" src="libs/flot/flot.js"></script>
+    <script type="text/javascript" src="libs/raphael-min.js"></script>
     <script type="text/javascript">
       window.onfocus = function() {
         document.getElementById('input').focus();
@@ -17,31 +18,50 @@
 
 
     <link rel="stylesheet" type="text/css" href="style.css" />
-    <link rel="stylesheet" type="text/css" href="dagre.css" />
-
-
-
   </head>
   <body>
-    <svg height="200px" width="600px">
-      <defs>
-        <marker id="arrowhead"
-                viewBox="0 0 10 10"
-                refX="8"
-                refY="5"
-                markerUnits="strokeWidth"
-                markerWidth="8"
-                markerHeight="5"
-                orient="auto"
-                style="fill: #333">
-                <path d="M 0 0 L 10 5 L 0 10 z"></path>
-        </marker>
-      </defs>
-    </svg>
 
-    <script src="d3.v2.min.js"></script>
-    <script src="dagre.js"></script>
-    <script src="graphing.js"></script>
+<script>
+
+var paper = Raphael(500, 50, 3200, 500);
+
+function draw_arrow(x1, y1, x2, y2) {
+  var size = 5;
+  var angle = Math.atan2(x1-x2,y2-y1);
+  angle = (angle / (2 * Math.PI)) * 360;
+  var arrowPath = paper.path("M" + x2 + " " + y2 + " L" + (x2 - size) + " " + (y2 - size) + " L" + (x2 - size) + " " + (y2 + size) + " L" + x2 + " " + y2 ).attr("fill","black").rotate((90+angle),x2,y2);
+  var linePath = paper.path("M" + x1 + " " + y1 + " L" + x2 + " " + y2);
+}
+
+
+function draw_pair(p) {
+  paper.clear();
+  var subpairs = list_subpairs(p);
+
+  function draw_subpair(p, x, y) {
+    console.log("drawing", p)
+    if (p.iden === undefined) {
+      if (p.length === 0) {
+        paper.text(x + 12, y + 12, "'()");
+      } else {
+        paper.text(x + 12, y + 12, p.toString());
+      }
+    } else {
+      paper.rect(x,    y, 20, 20);
+      paper.rect(x + 20, y, 20, 20);
+      
+      draw_subpair(p.car, x, y + 50);
+      draw_arrow(x + 10, y + 10, x + 10 ,y + 50);
+
+      draw_subpair(p.cdr, x + 90, y);
+      draw_arrow(x + 30, y + 10, x + 90, y + 10);
+    }
+  }
+  draw_subpair(subpairs, 10, 10);
+
+}
+
+</script>
 
     <div id="console">
       <h1><strong>JS-SCHEME</strong> -
@@ -54,8 +74,8 @@
         </p>
         <p>
           An extension of js-scheme that matches STk scheme functionality.  <br/>
-      Original js-scheme by Erik Silkensen   <br/>
-      Extensions by Pierre Karashchuk.
+          Original js-scheme by Erik Silkensen   <br/>
+          Extensions by Pierre Karashchuk.
         </p>
         <p>
           Enter <span style="font-weight:bold;color:green;">(help)</span> for 
@@ -68,9 +88,5 @@
       <input type="text" name="input" id="input" />
     </form>
     <div style="height:20em" onclick="$('input').focus()"></div>
-    <!--[if IE]>
-        <style type="text/css">#console,form {display:none;}</style>
-        js-scheme doesn't work with Internet Explorer.
-    <![endif]-->
   </body>
 </html>
