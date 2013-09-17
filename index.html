@@ -23,42 +23,105 @@
 
 <script>
 
+String.prototype.format = function () {
+    var o = Array.prototype.slice.call(arguments);
+    return this.replace(/{([^{}]*)}/g,
+        function (match, capture) {
+            var r = o[capture];
+            return (typeof r === 'string' || typeof r === 'number') ? r : match;
+        }
+    );
+};
+
 var paper = Raphael(500, 50, 3200, 500);
 
 function draw_arrow(x1, y1, x2, y2) {
   var size = 5;
   var angle = Math.atan2(x1-x2,y2-y1);
   angle = (angle / (2 * Math.PI)) * 360;
-  var arrowPath = paper.path("M" + x2 + " " + y2 + " L" + (x2 - size) + " " + (y2 - size) + " L" + (x2 - size) + " " + (y2 + size) + " L" + x2 + " " + y2 ).attr("fill","black").rotate((90+angle),x2,y2);
+  var arrowPath = paper.path("M{0} {1} L{2} {3} L{4} {5} L{6} {7}".format(x2,y2,x2-size,y2-size,x2-size,y2+size,x2,y2)).attr("fill","black").attr("fill-opacity",0.5).attr("stroke", "none").rotate((90+angle),x2,y2);
   var linePath = paper.path("M" + x1 + " " + y1 + " L" + x2 + " " + y2);
+
+  var ret = paper.set();
+  ret.push(arrowPath, linePath);
+  return ret;
 }
 
+var deferred_draw = [];
+var cells_by_iden = {};
 
 function draw_pair(p) {
   paper.clear();
   var subpairs = list_subpairs(p);
 
+  deferred_draw = [];
+  cells_by_iden = {};
+  
   function draw_subpair(p, x, y) {
-    console.log("drawing", p)
+
+    var px = x * 90;
+    var py = y * 50;
+
     if (p.iden === undefined) {
       if (p.length === 0) {
-        paper.text(x + 12, y + 12, "'()");
+        return paper.text(px + 10, py + 10, "'()");
+      }
+      else if (p[0] === "#") {
+        console.log("error. shouldn't be drawing this.")
       } else {
-        paper.text(x + 12, y + 12, p.toString());
+        return paper.text(px + 10, py + 10, p.toString());
       }
     } else {
-      paper.rect(x,    y, 20, 20);
-      paper.rect(x + 20, y, 20, 20);
-      
-      draw_subpair(p.car, x, y + 50);
-      draw_arrow(x + 10, y + 10, x + 10 ,y + 50);
+      var ret = paper.set();
+      var left_cell = paper.rect(px, py, 20, 20);
+      var right_cell = paper.rect(px + 20, py, 20, 20); 
+      ret.push(left_cell, right_cell);
 
-      draw_subpair(p.cdr, x + 90, y);
-      draw_arrow(x + 30, y + 10, x + 90, y + 10);
+      if (p.car[0] === "#") {
+        deferred_draw.push({'from': left_cell, 'to': p.car});
+      } else {
+        var car_set = draw_subpair(p.car, x, y + 1);
+        ret.push(car_set);  
+      }
+
+      if (p.cdr[0] === "#") {
+        deferred_draw.push({'from': right_cell, 'to': p.cdr});
+      } else if (p.cdr.length === 0) {
+        ret.push(paper.path("M{0},{1}L{2},{3}".format(px + 40, py, px + 20, py + 20)));
+      } else {
+        var cdr_set = draw_subpair(p.cdr, x + 1, y);
+        ret.push(cdr_set);
+      }
+
+      var dist = 0;
+      if (car_set && cdr_set && car_set.getBBox().width > 80) {
+        dist = Math.max(0, cdr_set.getBBox().height - 40);
+        car_set.transform("T0,{0}...".format(dist));
+      }
+
+      if (p.car[0] !== "#") {
+        ret.push(draw_arrow(px + 10, py + 10, px + 10, py + 48 + dist));
+      }
+      if ((p.cdr[0] !== "#") && (p.cdr.length !== 0)) {
+        ret.push(draw_arrow(px + 30, py + 10, px + 88, py + 10));
+      }
+
+      cells_by_iden[p.iden] = ret;
+
+      return ret;
     }
   }
-  draw_subpair(subpairs, 10, 10);
+  console.log(draw_subpair(subpairs, 0, 0).transform("T5,5..."));
 
+  for (var i=0;i<deferred_draw.length;i++) {
+    var from = deferred_draw[i]['from'];
+    var from_bb = from.getBBox(false);
+
+    var target = cells_by_iden[deferred_draw[i]['to']];
+    var target_bb = target.getBBox(false);
+
+    draw_arrow(from_bb.x + 10, from_bb.y + 10, target_bb.x + 10, target_bb.y);
+  }
 }
 
 </script>
@@ -75,7 +138,8 @@ function draw_pair(p) {
         <p>
           An extension of js-scheme that matches STk scheme functionality.  <br/>
           Original js-scheme by Erik Silkensen   <br/>
-          Extensions by Pierre Karashchuk.
+          Extensions by Pierre Karashchuk. <br />
+          Env-draw extension by Li Xuanji.
         </p>
         <p>
           Enter <span style="font-weight:bold;color:green;">(help)</span> for 
