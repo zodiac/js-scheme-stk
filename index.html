@@ -124,6 +124,12 @@ function draw_pair(p) {
   }
 }
 
+function dump_env() {
+  GlobalEnvironment.table.each(function(x) {
+    console.log(x.key.toString(), '->', x.value.obj.toString())
+  });
+}
+
 </script>
 
     <div id="console">
