@@ -771,17 +771,6 @@ function list_subpairs(pair) {
     return list_subpairs_helper(pair, []);
 }
 
-function draw_pair(pair) {
-    var obj = GlobalEnvironment.table.get(pair).obj;
-    var subpairs = list_subpairs(obj);
-
-    function draw(p) {
-        var out = "";
-        out += p.iden;
-        
-    }
-}
-
 var Environment = Class.create({
     initialize: function(parent) {
         this.table = new Hash();
@@ -3583,7 +3572,7 @@ window.onload = function() {
     REPL = new Interpreter();
 
     // put in the extra scheme =D
-    jscm_load_file('scheme-lib/berkeley_simply.scm')
+    //jscm_load_file('scheme-lib/berkeley_simply.scm')
 
     $(Document.INPUT).onkeydown = jscm_onkeydown;
     REPL.focus();
