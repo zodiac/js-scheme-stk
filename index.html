@@ -111,7 +111,7 @@ function draw_pair(p) {
       return ret;
     }
   }
-  console.log(draw_subpair(subpairs, 0, 0).transform("T5,5..."));
+  draw_subpair(subpairs, 0, 0).transform("T5,5...");
 
   for (var i=0;i<deferred_draw.length;i++) {
     var from = deferred_draw[i]['from'];
@@ -126,7 +126,7 @@ function draw_pair(p) {
 
 function dump_env() {
   GlobalEnvironment.table.each(function(x) {
-    console.log(x.key.toString(), '->', x.value.obj.toString())
+    console.log(x.key.toString(), 'is bound to', x.value.obj.toFullString ? x.value.obj.toFullString() : x.value.obj.toString());
   });
 }
 

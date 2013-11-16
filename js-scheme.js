@@ -445,6 +445,8 @@ var Util = new (Class.create({
         p.body = Util.convertToExternal(e);
         p.extend_env = extend_env;
 
+        p.formals = formals; //only used for drawing; for evaluation, formals is captured by extend_env
+
         return p;
     },
 
@@ -1142,6 +1144,9 @@ var Proc = Class.create({
             return '#<compound-procedure>';
         else
             return '#<compound-procedure ' + this.name + '>';
+    },
+    toFullString: function() {
+        return this.toString() + " formals:" + this.formals.join(',') + ' body:' + this.body.toString();
     }
 });
 
